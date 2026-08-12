@@ -64,8 +64,11 @@ func Transpile(cloudInitYAML []byte) ([]byte, error) {
 		bf.Contents.Inline = content
 
 		if f.Permissions != "" {
-			mode, err := strconv.Atoi(f.Permissions)
+			// Parse as base 8 (octal) since cloud-config permissions
+			// are defined as octal strings (e.g. "0644" = decimal 420).
+			parsedMode, err := strconv.ParseInt(f.Permissions, 8, 32)
 			if err == nil {
+				mode := int(parsedMode)
 				bf.Mode = &mode
 			}
 		}

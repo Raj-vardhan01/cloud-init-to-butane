@@ -37,3 +37,23 @@ users:
 		t.Fatalf("Transpile failed unexpectedly: %v", err)
 	}
 }
+
+// TestTranspile_WriteFiles_OctalPermissions verifies that write_files permissions
+// given as octal strings (e.g. "0644") are correctly parsed as octal, not decimal.
+func TestTranspile_WriteFiles_OctalPermissions(t *testing.T) {
+	input := `
+write_files:
+  - path: /etc/config.json
+    content: "{}"
+    permissions: "0644"
+`
+	out, err := Transpile([]byte(input))
+	if err != nil {
+		t.Fatalf("Transpile failed: %v", err)
+	}
+	outStr := string(out)
+	// octal 0644 = decimal 420; strconv.Atoi would produce 644 (wrong)
+	if !strings.Contains(outStr, "mode: 420") {
+		t.Errorf("expected mode: 420 (octal 0644), got:\n%s", outStr)
+	}
+}
