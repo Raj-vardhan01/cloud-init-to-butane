@@ -101,7 +101,8 @@ func Transpile(cloudInitYAML []byte) ([]byte, error) {
 	}
 
 	// 4. Convert CaCerts
-	if len(cc.CaCerts.Trusted) > 0 {
+	// Guard against nil pointer dereference when ca_certs is not present in the input.
+	if cc.CaCerts != nil && len(cc.CaCerts.Trusted) > 0 {
 		for i, cert := range cc.CaCerts.Trusted {
 			path := fmt.Sprintf("/etc/ssl/certs/ca-custom-%d.pem", i)
 			butane.Storage.Files = append(butane.Storage.Files, ButaneFile{
